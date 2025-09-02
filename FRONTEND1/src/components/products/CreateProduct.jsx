@@ -63,7 +63,6 @@ const CreateProduct = () => {
       setFormData({
         name: "",
         description: "",
-        price: "",
         cost: "",
         stock: "",
         lowStockThreshold: "",
@@ -120,23 +119,10 @@ const CreateProduct = () => {
               
 
               {/* Price, Cost, Stock */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Qiimaha hada u yahay ($)</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Qiimaha Saxda ah ($)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Qiimaha Hore ee Alaabtu ku Timid ($)</label>
                   <input
                     type="number"
                     name="cost"
@@ -150,7 +136,7 @@ const CreateProduct = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Tirada Kaydka</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Tirada Kaydka Aad dhigayso</label>
                   <input
                     type="number"
                     name="stock"

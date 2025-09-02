@@ -1,293 +1,409 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useProductsStore } from "@/store/useProductsStore";
-import { Loader2, TrendingUp, DollarSign, Package, Trash2, X } from "lucide-react";
+import { FiCalendar, FiDollarSign, FiPackage, FiRefreshCw, FiUser, FiSearch, FiTrash2, FiEdit, FiCheck, FiX } from "react-icons/fi";
+import { toast } from "react-hot-toast";
 import dayjs from "dayjs";
+import useSalesStore from "../../store/UseSalesStore";
 
 const DailySales = () => {
-  const {
-    products,
-    isLoading,
-    getDailyproducts,
-    deleteProduct,
-    date
-  } = useProductsStore();
-
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [editingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const { dailySales, fetchDailySales, deleteSale, updateSale, loading, error } = useSalesStore();
+  const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredSales, setFilteredSales] = useState([]);
+  const [editingSale, setEditingSale] = useState(null);
+  const [updatedData, setUpdatedData] = useState({
+    quantity: 0,
+    sellingCost: 0
+  });
 
   useEffect(() => {
-    getDailyproducts();
-  }, [getDailyproducts]);
+    fetchDailySales();
+  }, [fetchDailySales]);
 
-  const handleDeleteClick = (id) => {
-    setDeleteConfirmId(id);
+  useEffect(() => {
+    if (dailySales && dailySales.sales) {
+      let filtered = dailySales.sales;
+      
+      if (searchTerm) {
+        filtered = filtered.filter(sale =>
+          sale.product?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (sale.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) || "Qof")
+        );
+      }
+      
+      setFilteredSales(filtered);
+    }
+  }, [dailySales, searchTerm]);
+
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteConfirmId) return;
-    try {
-      await deleteProduct(deleteConfirmId);
-    } catch (error) {
-      console.error("Error deleting product:", error);
-    } finally {
-      setDeleteConfirmId(null);
+  const handleRefresh = () => {
+    fetchDailySales();
+    toast.success("Iibka maanta si guul leh ayaa loo cusboonaysiiyay");
+  };
+
+  const handleDeleteSale = async (saleId) => {
+    if (window.confirm("Ma hubtaa inaad rabto inaad tirtirto iibkan?")) {
+      try {
+        await deleteSale(saleId);
+        toast.success("Iibka si guul leh ayaa loo tirtiray");
+      } catch (error) {
+        toast.error("Khalad ayaa dhacay marka la tirtirayo iibka");
+      }
     }
   };
 
-  const cancelDelete = () => {
-    setDeleteConfirmId(null);
+  const handleEditSale = (sale) => {
+    setEditingSale(sale._id);
+    setUpdatedData({
+      quantity: sale.quantity,
+      sellingCost: sale.sellingCost || sale.sellingPrice || 0
+    });
   };
 
-  const totalSales = products.reduce((sum, product) => {
-    const quantity = product.quantity ?? 1;
-    const price = product.price ?? 0;
-    return sum + price * quantity;
-  }, 0);
+  const handleUpdateSale = async (saleId) => {
+    try {
+      await updateSale(saleId, updatedData);
+      toast.success("Iibka si guul leh ayaa loo cusboonaysiiyay");
+      setEditingSale(null);
+    } catch (error) {
+      toast.error("Khalad ayaa dhacay marka la cusboonaysiinayo iibka");
+    }
+  };
 
-  const averagePrice = products.length > 0 ? totalSales / products.length : 0;
+  const handleCancelEdit = () => {
+    setEditingSale(null);
+    setUpdatedData({ quantity: 0, sellingCost: 0 });
+  };
 
-  const statCards = [
-    {
-      title: "Total Products",
-      value: products.length,
-      icon: <Package className="text-white" size={20} />,
-      gradient: "from-indigo-600 to-indigo-500",
-      bgColor: "bg-indigo-700",
-    },
-    {
-      title: "Today's Sales",
-      value: `$${totalSales.toFixed(2)}`,
-      icon: <DollarSign className="text-white" size={20} />,
-      gradient: "from-purple-600 to-purple-500",
-      bgColor: "bg-purple-700",
-    },
-    {
-      title: "Avg. Price",
-      value: `$${averagePrice.toFixed(2)}`,
-      icon: <TrendingUp className="text-white" size={20} />,
-      gradient: "from-pink-600 to-pink-500",
-      bgColor: "bg-pink-700",
-    },
-  ];
-
-  useEffect(() => {
-  const today = dayjs().format("DD-MM-YYYY");
-  if (date !== today) {
-    getDailyproducts();
-  }
-}, [date, getDailyproducts]);
-
+  const totalSales = filteredSales.reduce((sum, sale) => sum + (sale.totalAmount || sale.total || 0), 0);
+  const totalQuantity = filteredSales.reduce((sum, sale) => sum + sale.quantity, 0);
 
   return (
-    <motion.div
-      className="min-h-screen bg-transparent to-gray-900 p-4 md:p-8"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
           <motion.div
-            className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            className="flex items-center gap-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <h3 className="text-xl font-bold text-white mb-4">Confirm Deletion</h3>
-            <p className="text-gray-300 mb-6">Are you sure you want to delete this product?</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={cancelDelete}
-                className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-500 transition flex items-center"
-              >
-                <X className="mr-2" size={18} /> Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-500 transition flex items-center"
-              >
-                <Trash2 className="mr-2" size={18} />
-                Delete
-              </button>
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-xl">
+              <FiDollarSign className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                Iibka Maanta
+              </h1>
+              <p className="text-gray-400">Diiwaanka iibka maanta</p>
+            </div>
+          </motion.div>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            {/* Date Selector */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiCalendar className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Raadi iibka..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <motion.button
+              onClick={handleRefresh}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-xl text-white font-medium"
+            >
+              <FiRefreshCw className="w-5 h-5 mr-2" />
+              Cusboonaysii
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-200 text-sm">Wadarta Iibka</p>
+                <p className="text-2xl font-bold text-white">${totalSales.toFixed(2)}</p>
+              </div>
+              <FiDollarSign className="h-8 w-8 text-blue-200" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-200 text-sm">Tirada Alaabta</p>
+                <p className="text-2xl font-bold text-white">{totalQuantity}</p>
+              </div>
+              <FiPackage className="h-8 w-8 text-green-200" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-200 text-sm">Tirada Iibka</p>
+                <p className="text-2xl font-bold text-white">{filteredSales.length}</p>
+              </div>
+              <FiUser className="h-8 w-8 text-purple-200" />
             </div>
           </motion.div>
         </div>
-      )}
-
-      <div className="max-w-7xl mx-auto">
-        {/* Stats Cards */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {statCards.map((card, index) => (
-            <div
-              key={index}
-              className={`bg-gradient-to-r ${card.gradient} rounded-xl p-4 md:p-6 shadow-lg`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-indigo-100 font-medium text-sm md:text-base">{card.title}</p>
-                  <h3 className="text-xl md:text-2xl font-bold text-white mt-1 md:mt-2">{card.value}</h3>
-                </div>
-                <div className={`${card.bgColor} p-2 md:p-3 rounded-lg`}>
-                  {card.icon}
-                </div>
-              </div>
-            </div>
-          ))}
-        </motion.div>
 
         {/* Sales Table */}
         <motion.div
-          className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700"
         >
-          <div className="p-4 md:p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center">
-                  <TrendingUp className="mr-2 md:mr-3" size={24} />
-                  Today's Sales
-                </h2>
-                <p className="text-gray-300 text-sm md:text-base mt-1">
-                  {date || "Daily sales overview"}
-                </p>
-              </div>
-            </div>
+          <h2 className="text-xl font-bold text-white mb-6">Liiska Iibka Maanta</h2>
 
-            {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="animate-spin text-white" size={40} />
-              </div>
-            ) : products.length === 0 ? (
-              <div className="bg-gray-900 rounded-xl shadow-lg p-6 md:p-8 text-center">
-                <div className="max-w-md mx-auto">
-                  <svg
-                    className="w-16 h-16 mx-auto text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                    />
-                  </svg>
-                  <h3 className="mt-4 text-xl font-medium text-white">No Sales Recorded Today</h3>
-                  <p className="mt-2 text-gray-400">
-                    You haven't made any sales today. Start adding products to track your daily sales.
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-400">Soo dejineysa iibka...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 bg-red-900/20 rounded-xl">
+              <p className="text-red-400">{error}</p>
+            </div>
+          ) : filteredSales.length === 0 ? (
+            <div className="text-center py-12 bg-gray-700 rounded-xl">
+              <FiDollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">
+                {searchTerm ? 
+                  `Wax iib ah lagama helin "${searchTerm}"` : 
+                  "Ma jiro iibka maanta."
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-700 text-left">
+                    <th className="px-4 py-3 text-blue-300 font-semibold">Alaabta</th>
+                    <th className="px-4 py-3 text-green-300 font-semibold">Tirada</th>
+                    <th className="px-4 py-3 text-purple-300 font-semibold">Qiimaha</th>
+                    <th className="px-4 py-3 text-yellow-300 font-semibold">Wadarta</th>
+                    <th className="px-4 py-3 text-pink-300 font-semibold">Isticmaale</th>
+                    <th className="px-4 py-3 text-gray-300 font-semibold">Wakhti</th>
+                    <th className="px-4 py-3 text-red-300 font-semibold">Ficilada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSales.map((sale, index) => (
+                    <motion.tr
+                      key={sale._id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <FiPackage className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{sale.product?.name || "Alaab la'aan"}</p>
+                            <p className="text-sm text-gray-400">ID: {sale.product?._id?.substring(0, 6)}...</p>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* Quantity */}
+                      <td className="px-4 py-3">
+                        {editingSale === sale._id ? (
+                          <input
+                            type="number"
+                            min="1"
+                            value={updatedData.quantity}
+                            onChange={(e) => setUpdatedData({
+                              ...updatedData,
+                              quantity: parseInt(e.target.value) || 0
+                            })}
+                            className="w-20 px-2 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                          />
+                        ) : (
+                          <span className="bg-green-900/30 text-green-400 px-2 py-1 rounded-lg text-sm">
+                            {sale.quantity}
+                          </span>
+                        )}
+                      </td>
+                      
+                      {/* Selling Cost */}
+                      <td className="px-4 py-3">
+                        {editingSale === sale._id ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={updatedData.sellingCost}
+                            onChange={(e) => setUpdatedData({
+                              ...updatedData,
+                              sellingCost: parseFloat(e.target.value) || 0
+                            })}
+                            className="w-20 px-2 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                          />
+                        ) : (
+                          <span className="text-blue-300 font-medium">
+                            ${sale.sellingCost?.toFixed(2) || sale.sellingPrice?.toFixed(2)}
+                          </span>
+                        )}
+                      </td>
+                      
+                      {/* Total Amount */}
+                      <td className="px-4 py-3 text-emerald-300 font-bold">
+                        ${(editingSale === sale._id 
+                          ? (updatedData.quantity * updatedData.sellingCost).toFixed(2)
+                          : (sale.totalAmount || sale.total || 0).toFixed(2)
+                        )}
+                      </td>
+                      
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                            <FiUser className="h-4 w-4 text-white" />
+                          </div>
+                          <span className="text-gray-300">{sale.user?.username || "Qof"}</span>
+                        </div>
+                      </td>
+                      
+                      <td className="px-4 py-3 text-gray-400 text-sm">
+                        {dayjs(sale.createdAt).format("HH:mm")}
+                      </td>
+                      
+                      {/* Actions */}
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          {editingSale === sale._id ? (
+                            <>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleUpdateSale(sale._id)}
+                                className="p-2 bg-green-700 hover:bg-green-600 rounded-lg text-white"
+                                title="Kaydi"
+                              >
+                                <FiCheck className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={handleCancelEdit}
+                                className="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"
+                                title="Jooji"
+                              >
+                                <FiX className="h-4 w-4" />
+                              </motion.button>
+                            </>
+                          ) : (
+                            <>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleEditSale(sale)}
+                                className="p-2 bg-blue-700 hover:bg-blue-600 rounded-lg text-white"
+                                title="Wax ka beddel iibka"
+                              >
+                                <FiEdit className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleDeleteSale(sale._id)}
+                                className="p-2 bg-red-700 hover:bg-red-600 rounded-lg text-white"
+                                title="Tirtir iibka"
+                              >
+                                <FiTrash2 className="h-4 w-4" />
+                              </motion.button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Summary */}
+          {filteredSales.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-6 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl border border-gray-600"
+            >
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Wadarta Iibka</p>
+                  <p className="text-xl font-bold text-emerald-400">${totalSales.toFixed(2)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Tirada Alaabta</p>
+                  <p className="text-xl font-bold text-blue-400">{totalQuantity}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Tirada Iibka</p>
+                  <p className="text-xl font-bold text-purple-400">{filteredSales.length}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Qiimaha Dhexe</p>
+                  <p className="text-xl font-bold text-yellow-400">
+                    ${(totalSales / totalQuantity).toFixed(2)}
                   </p>
                 </div>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-700">
-                  <thead>
-                    <tr>
-                      <th className="py-3 px-4 text-left text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider">Product</th>
-                      <th className="py-3 px-4 text-left text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">Description</th>
-                      <th className="py-3 px-4 text-right text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider">Qty</th>
-                      <th className="py-3 px-4 text-right text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider">Price</th>
-                      <th className="py-3 px-4 text-right text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider">Total</th>
-                      <th className="py-3 px-4 text-right text-xs md:text-sm font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {products.map((product, index) => {
-                      const quantity = product.quantity ?? 1;
-                      const price = product.price ?? 0;
-                      const total = quantity * price;
-
-                      return (
-                        <motion.tr
-                          key={product._id ?? `product-${index}`}
-                          className="hover:bg-white hover:bg-opacity-5 transition-colors"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.1 * index }}
-                        >
-                          <td className="py-4 px-4 whitespace-nowrap">
-                            {editingId === product._id ? (
-                              <input
-                                type="text"
-                                value={editForm.name || ""}
-                                onChange={(e) =>
-                                  setEditForm({ ...editForm, name: e.target.value })
-                                }
-                                className="bg-gray-700 text-white px-3 py-1 rounded w-full max-w-[200px]"
-                              />
-                            ) : (
-                              <div className="text-sm font-medium text-white">
-                                {product.name}
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-4 px-4 text-sm text-gray-300 hidden sm:table-cell truncate max-w-[200px]">
-                            {editingId === product._id ? (
-                              <input
-                                type="text"
-                                value={editForm.description || ""}
-                                onChange={(e) =>
-                                  setEditForm({ ...editForm, description: e.target.value })
-                                }
-                                className="bg-gray-700 text-white px-3 py-1 rounded w-full"
-                              />
-                            ) : (
-                              product.description
-                            )}
-                          </td>
-                          <td className="py-4 px-4 whitespace-nowrap text-right text-sm text-white">
-                            {quantity}
-                          </td>
-                          <td className="py-4 px-4 whitespace-nowrap text-right text-sm text-white">
-                            {editingId === product._id ? (
-                              <input
-                                type="number"
-                                value={editForm.price ?? 0}
-                                onChange={(e) =>
-                                  setEditForm({ ...editForm, price: Number(e.target.value) })
-                                }
-                                className="bg-gray-700 text-white px-3 py-1 rounded w-20 text-right"
-                              />
-                            ) : (
-                              `$${price.toFixed(2)}`
-                            )}
-                          </td>
-                          <td className="py-4 px-4 whitespace-nowrap text-right text-sm font-medium text-emerald-400">
-                            ${total.toFixed(2)}
-                          </td>
-                          <td className="py-4 px-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => handleDeleteClick(product._id)}
-                                className="text-red-400 hover:text-red-200 transition-colors p-1 rounded"
-                                title="Delete"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,6 +1,5 @@
-// store/salesStore.js
 import { create } from "zustand";
-import axios from "../lib/axios"; // ✅ import shared axios instance
+import axios from "../lib/axios";
 
 const useSalesStore = create((set) => ({
   sales: [],
@@ -8,7 +7,6 @@ const useSalesStore = create((set) => ({
   usersDailySales: [],
   salesByDate: [],
   allUsersSalesByDate: [],
-  todaySales: [],
   loading: false,
   error: null,
   total: 0,
@@ -25,79 +23,120 @@ const useSalesStore = create((set) => ({
   },
 
   createSale: async (saleData) => {
+    set({ loading: true, error: null });
     try {
       const res = await axios.post("/sales", saleData);
-      set((state) => ({ sales: [...state.sales, res.data] }));
+      set((state) => ({ 
+        sales: [res.data.sale, ...state.sales],
+        loading: false 
+      }));
+      return res.data;
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to create sale" });
+      set({ 
+        error: err.response?.data?.error || "Failed to create sale",
+        loading: false 
+      });
+      throw err;
     }
   },
 
   updateSale: async (saleId, updatedData) => {
+    set({ loading: true, error: null });
     try {
       const res = await axios.put(`/sales/${saleId}`, updatedData);
       set((state) => ({
-        sales: state.sales.map((sale) => (sale._id === saleId ? res.data : sale)),
+        sales: state.sales.map((sale) => (sale._id === saleId ? res.data.sale : sale)),
+        loading: false
       }));
+      return res.data;
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to update sale" });
+      set({ 
+        error: err.response?.data?.error || "Failed to update sale",
+        loading: false 
+      });
+      throw err;
     }
   },
 
   deleteSale: async (saleId) => {
+    set({ loading: true, error: null });
     try {
       await axios.delete(`/sales/${saleId}`);
       set((state) => ({
         sales: state.sales.filter((sale) => sale._id !== saleId),
+        loading: false
       }));
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to delete sale" });
+      set({ 
+        error: err.response?.data?.error || "Failed to delete sale",
+        loading: false 
+      });
+      throw err;
     }
   },
 
   // -------------------- DAILY & DATE-BASED --------------------
   fetchDailySales: async () => {
+    set({ loading: true, error: null });
     try {
-      const res = await axios.get("/sales/daily");
-      set({ dailySales: res.data });
+      const res = await axios.get("/sales/daily/today");
+      set({ 
+        dailySales: res.data,
+        loading: false 
+      });
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch daily sales" });
+      set({ 
+        error: err.response?.data?.error || "Failed to fetch daily sales",
+        loading: false 
+      });
     }
   },
 
   fetchUsersDailySales: async () => {
+    set({ loading: true, error: null });
     try {
-      const res = await axios.get("/sales/users/daily");
-      set({ usersDailySales: res.data });
+      const res = await axios.get("/sales/daily/users");
+      set({ 
+        usersDailySales: res.data,
+        loading: false 
+      });
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch users daily sales" });
+      set({ 
+        error: err.response?.data?.error || "Failed to fetch users daily sales",
+        loading: false 
+      });
     }
   },
 
   fetchSalesByDate: async (date) => {
+    set({ loading: true, error: null });
     try {
       const res = await axios.get(`/sales/date/${date}`);
-      set({ salesByDate: res.data });
+      set({ 
+        salesByDate: res.data,
+        loading: false 
+      });
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch sales by date" });
+      set({ 
+        error: err.response?.data?.error || "Failed to fetch sales by date",
+        loading: false 
+      });
     }
   },
 
   fetchAllUsersSalesByDate: async (date) => {
+    set({ loading: true, error: null });
     try {
       const res = await axios.get(`/sales/all/date/${date}`);
-      set({ allUsersSalesByDate: res.data });
+      set({ 
+        allUsersSalesByDate: res.data,
+        loading: false 
+      });
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch all users sales by date" });
-    }
-  },
-
-  fetchTodaySales: async () => {
-    try {
-      const res = await axios.get("/sales/today");
-      set({ todaySales: res.data });
-    } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch today’s sales" });
+      set({ 
+        error: err.response?.data?.error || "Failed to fetch all users sales by date",
+        loading: false 
+      });
     }
   },
 }));

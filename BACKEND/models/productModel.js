@@ -11,20 +11,16 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    price: {
-      type: Number,
-      required: true, // Fixed selling price
-    },
     cost: {
       type: Number,
       required: true, // Cost of product
     },
-    image : {
+    image: {
       type: String,
       default: "",
-      required : true
+      required: true
     },
-    category : {
+    category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,

@@ -3,34 +3,35 @@ import {
   createSale,
   getSales,
   getSaleById,
+  updateSale,
+  deleteSale,
+  getDailySales,
   getMyDailySales,
   getUsersDailySales,
   getSalesByDate,
-  getAllUsersSalesByDate,
-  updateDailySale,
-  deleteDailySale,
-  getDailySales,
+  getAllUsersSalesByDate
 } from "../Controllers/salesController.js";
-import { protectedRoute, adminRoute } from "../middlewares/authMiddleware.js";
+import { protectedRoute } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// ------------------- CRUD -------------------
-router.post("/", protectedRoute, createSale); // Create a sale
-router.get("/", protectedRoute, getSales); // Get all sales
-router.get("/:id", protectedRoute, getSaleById); // Get sale by ID
+// All routes are protected
+router.use(protectedRoute);
 
-// ------------------- Daily Sales -------------------
-router.get("/daily/me", protectedRoute, getMyDailySales); // Logged-in user's daily sales
-router.get("/daily/users", protectedRoute, adminRoute, getUsersDailySales); // All users daily sales
-router.get("/daily", protectedRoute, adminRoute, getDailySales); // All sales today
+router.route("/")
+  .get(getSales)
+  .post(createSale);
 
-// ------------------- Sales by Date -------------------
-router.get("/date/:date", protectedRoute, getSalesByDate); // Sales by date
-router.get("/date/:date/users", protectedRoute, adminRoute, getAllUsersSalesByDate); // All users sales by date
+router.route("/:id")
+  .get(getSaleById)
+  .put(updateSale)
+  .delete(deleteSale);
 
-// ------------------- Admin Daily Sale Management -------------------
-router.patch("/daily/:saleId", protectedRoute, adminRoute, updateDailySale); // Update daily sale
-router.delete("/daily/:saleId", protectedRoute, adminRoute, deleteDailySale); // Delete daily sale
+// Daily sales routes (NO ObjectId parameters)
+router.get("/daily/today", getDailySales);
+router.get("/daily/my", getMyDailySales);
+router.get("/daily/users", getUsersDailySales);
+router.get("/date/:date", getSalesByDate);
+router.get("/all/date/:date", getAllUsersSalesByDate);
 
 export default router;

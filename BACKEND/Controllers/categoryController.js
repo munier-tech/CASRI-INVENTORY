@@ -3,7 +3,8 @@ import Category from "../models/categoryModel.js";
 // ✅ Create Category
 export const createCategory = async (req, res) => {
   try {
-    const { name, description, imageUrl } = req.body;
+    const { name, description } = req.body;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
 
     if (!name) return res.status(400).json({ error: "Name is required" });
 
@@ -15,6 +16,29 @@ export const createCategory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updateCategory = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined; // only update if new image uploaded
+
+    const updatedFields = { name, description };
+    if (imageUrl) updatedFields.imageUrl = imageUrl;
+
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      updatedFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!category) return res.status(404).json({ error: "Category not found" });
+
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 // ✅ Get All Categories
 export const getCategories = async (_req, res) => {
@@ -38,23 +62,7 @@ export const getCategoryById = async (req, res) => {
 };
 
 // ✅ Update Category
-export const updateCategory = async (req, res) => {
-  try {
-    const { name, description, imageUrl } = req.body;
 
-    const category = await Category.findByIdAndUpdate(
-      req.params.id,
-      { name, description, imageUrl },
-      { new: true, runValidators: true }
-    );
-
-    if (!category) return res.status(404).json({ error: "Category not found" });
-
-    res.status(200).json(category);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // ✅ Delete Category
 export const deleteCategory = async (req, res) => {

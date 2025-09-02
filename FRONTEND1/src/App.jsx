@@ -13,6 +13,8 @@ import FinancialLogDate from './components/Admin/GetFinancialDate';
 import CreateProduct from './components/products/CreateProduct';
 import Categories from './components/categories/CreateCategories';
 import GetProducts from './components/products/GetProducts';
+import CreateSale from './pages/Homepage';
+import DailySales from './components/Admin/DailySales';
 
 const App = () => {
   const { checkAuth, user, isLoading, authChecked } = useUserStore();
@@ -39,13 +41,14 @@ const App = () => {
 
       <div className="relative z-10 pt-14 px-4 min-h-screen">
         <Routes>
-          <Route path="/" element={user ? <Homepage /> : <Navigate to="/signin" />} />
+          <Route path="/" element={user ? <CreateSale /> : <Navigate to="/signin" />} />
           <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" />} />
           <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/" />} />
           <Route path="/dashboard" element={user?.role === "admin" ? <Dashboard /> : <Navigate to="/" />} />
           <Route path="/FinancialLogForm" element={user?.role === "admin" ? <FinancialLogForm /> : <Navigate to="/" />} />
           <Route path="/createProduct" element={user?.role === "admin" ? <CreateProduct /> : <Navigate to="/" />} />
           <Route path="/products" element={user?.role === "admin" ? <GetProducts /> : <Navigate to="/" />} />
+          <Route path="/DailySales" element={user?.role === "admin" ? <DailySales /> : <Navigate to="/" />} />
           <Route path="/categories" element={user?.role === "admin" ? <Categories /> : <Navigate to="/" />} />
           <Route path="/FinancialLogDate" element={user?.role === "admin" ? <FinancialLogDate /> : <Navigate to="/" />} />
         </Routes>

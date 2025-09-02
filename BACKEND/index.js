@@ -12,6 +12,7 @@ import historyRouter from "./Routes/historyRoute.js";
 import liabilityRouter from "./Routes/LiabilityRoute.js";
 import financialRouter from "./Routes/financialRoute.js";
 import categoryRouter from "./Routes/categoryRoute.js";
+import SalesRouter from "./Routes/salesRoute.js";
 
 // Database
 import { connectdb } from "./lib/connectDB.js";
@@ -48,6 +49,7 @@ app.use("/api/history", historyRouter);
 app.use("/api/liability", liabilityRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/financial", financialRouter);
+app.use("/api/sales", SalesRouter);
 
 // Serve frontend in production
 const __dirname = path.resolve();

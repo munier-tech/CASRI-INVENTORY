@@ -1,14 +1,20 @@
 import express from "express";
-import { createCategory, deleteCategory, getCategories, getCategoryById, updateCategory } from "../Controllers/categoryController.js";
+import {
+  createCategory,
+  updateCategory,
+  getCategories,
+  getCategoryById,
+  deleteCategory
+} from "../Controllers/categoryController.js";
 
+import upload  from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-// CRUD Routes
-router.post("/", createCategory);
+router.post("/", upload.single("image"), createCategory);
+router.put("/:id", upload.single("image"), updateCategory);
 router.get("/", getCategories);
 router.get("/:id", getCategoryById);
-router.put("/:id", updateCategory);
 router.delete("/:id", deleteCategory);
 
 export default router;

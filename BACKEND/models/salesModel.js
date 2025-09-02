@@ -10,12 +10,14 @@ const saleSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       required: true,
+      min: 1,
     },
-    sellingPrice: {
+    sellingCost: { // Changed from sellingPrice to sellingCost
       type: Number,
-      required: true, // fetched from Product.price at sale time
+      required: true,
+      min: 0,
     },
-    total: {
+    totalAmount: {
       type: Number,
       required: true,
     },
@@ -23,6 +25,6 @@ const saleSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Sales = mongoose.model("Sale", saleSchema);
+const Sale = mongoose.model("Sale", saleSchema);
 
-export default Sales
+export default Sale;

@@ -1,20 +1,18 @@
 import Product from "../models/productModel.js";
 
-
 // ✅ Create Product
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, cost, stock, lowStockThreshold, category } = req.body;
+    const { name, description, cost, stock, lowStockThreshold, category } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (!name || !price || !cost || !category || !image) {
-      return res.status(400).json({ error: "Name, price, cost, category, and image are required" });
+    if (!name || !cost || !category || !image) {
+      return res.status(400).json({ error: "Name, cost, category, and image are required" });
     }
 
     const product = new Product({
       name,
       description,
-      price,
       cost,
       image,
       category,
@@ -42,12 +40,12 @@ export const getProducts = async (_req, res) => {
 // ✅ Update Product
 export const updateProduct = async (req, res) => {
   try {
-    const { name, description, price, cost, stock, lowStockThreshold, category } = req.body;
+    const { name, description, cost, stock, lowStockThreshold, category } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : req.body.image;
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { name, description, price, cost, stock, lowStockThreshold, category, image },
+      { name, description, cost, stock, lowStockThreshold, category, image },
       { new: true, runValidators: true }
     );
 
@@ -69,7 +67,6 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-
 // ✅ Get Single Product
 export const getProductById = async (req, res) => {
   try {
@@ -81,7 +78,6 @@ export const getProductById = async (req, res) => {
   }
 };
 
-
 // ✅ Get Low Stock Products
 export const getLowStockProducts = async (_req, res) => {
   try {
@@ -91,5 +87,23 @@ export const getLowStockProducts = async (_req, res) => {
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// ✅ Update Product Stock (for sales)
+export const updateProductStock = async (productId, quantitySold) => {
+  try {
+    const product = await Product.findById(productId);
+    if (!product) throw new Error("Product not found");
+    
+    if (product.stock < quantitySold) {
+      throw new Error("Insufficient stock");
+    }
+    
+    product.stock -= quantitySold;
+    await product.save();
+    return product;
+  } catch (error) {
+    throw error;
   }
 };

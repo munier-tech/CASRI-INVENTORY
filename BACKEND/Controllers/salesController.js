@@ -1,33 +1,49 @@
-import Sale from "../models/Sale.js";
-import Product from "../models/Product.js";
-import User from "../models/User.js";
+import Product from "../models/productModel.js";
+import Sale from "../models/salesModel.js";
+import User from "../models/userModel.js";
 import dayjs from "dayjs";
 
-// Create Sale
+// ✅ Create Sale
 export const createSale = async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, sellingCost } = req.body;
 
+    // Validate input
+    if (!productId || !quantity || !sellingCost) {
+      return res.status(400).json({ error: "Product, quantity, and selling cost are required" });
+    }
+
+    // Update product stock
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ error: "Product not found" });
-    if (product.stock < quantity) return res.status(400).json({ error: "Not enough stock" });
-
-    const sellingPrice = product.price; // fixed price at time of sale
-    const total = sellingPrice * quantity;
-
+    
+    if (product.stock < quantity) {
+      return res.status(400).json({ error: "Insufficient stock" });
+    }
+    
     product.stock -= quantity;
     await product.save();
-
+    
+    // Create sale record
     const sale = new Sale({
-      product: product._id,
+      product: productId,
       quantity,
-      sellingPrice,
-      total,
-      user: req.user._id,
+      sellingCost,
+      totalAmount: quantity * sellingCost,
+      user: req.user._id // Add the user who made the sale
     });
 
     await sale.save();
-    res.status(201).json(sale);
+    
+    // Populate product details in the response
+    await sale.populate("product", "name cost");
+    await sale.populate("user", "username");
+    
+    res.status(201).json({
+      message: "Sale created successfully",
+      sale,
+      remainingStock: product.stock
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -36,7 +52,10 @@ export const createSale = async (req, res) => {
 // Get All Sales
 export const getSales = async (req, res) => {
   try {
-    const sales = await Sale.find().populate("product", "name price").populate("user", "username role");
+    const sales = await Sale.find()
+      .populate("product", "name cost")
+      .populate("user", "username role")
+      .sort({ createdAt: -1 });
     res.json(sales);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -46,7 +65,9 @@ export const getSales = async (req, res) => {
 // Get Sale by ID
 export const getSaleById = async (req, res) => {
   try {
-    const sale = await Sale.findById(req.params.id).populate("product", "name");
+    const sale = await Sale.findById(req.params.id)
+      .populate("product", "name cost")
+      .populate("user", "username");
     if (!sale) return res.status(404).json({ error: "Sale not found" });
     res.json(sale);
   } catch (error) {
@@ -54,7 +75,33 @@ export const getSaleById = async (req, res) => {
   }
 };
 
-// ================== DAILY / DATE FUNCTIONS BASED ON SALES ==================
+// ================== DAILY / DATE FUNCTIONS ==================
+
+// Get Today's Sales (FIXED - No ObjectId required)
+export const getDailySales = async (req, res) => {
+  try {
+    const start = dayjs().startOf("day").toDate();
+    const end = dayjs().endOf("day").toDate();
+
+    const sales = await Sale.find({ 
+      createdAt: { $gte: start, $lte: end } 
+    })
+      .populate("product", "name cost")
+      .sort({ createdAt: -1 });
+
+    const total = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const totalQuantity = sales.reduce((sum, sale) => sum + sale.quantity, 0);
+    
+    res.status(200).json({ 
+      sales, 
+      total,
+      totalQuantity,
+      count: sales.length 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Get logged-in user's sales for today
 export const getMyDailySales = async (req, res) => {
@@ -66,12 +113,18 @@ export const getMyDailySales = async (req, res) => {
     const sales = await Sale.find({
       user: userId,
       createdAt: { $gte: start, $lte: end },
-    }).populate("product", "name price");
+    })
+      .populate("product", "name cost")
+      .sort({ createdAt: -1 });
 
     if (!sales.length) return res.status(404).json({ message: "No sales today" });
 
-    const total = sales.reduce((sum, s) => sum + s.total, 0);
-    res.status(200).json({ message: "Today's sales fetched", sales, total });
+    const total = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    res.status(200).json({ 
+      message: "Today's sales fetched", 
+      sales, 
+      total 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -90,13 +143,13 @@ export const getUsersDailySales = async (req, res) => {
         const sales = await Sale.find({
           user: user._id,
           createdAt: { $gte: start, $lte: end },
-        }).populate("product", "name price");
+        }).populate("product", "name cost");
 
         return {
           username: user.username,
           role: user.role,
           sales,
-          total: sales.reduce((sum, s) => sum + s.total, 0),
+          total: sales.reduce((sum, s) => sum + s.totalAmount, 0),
         };
       })
     );
@@ -119,12 +172,19 @@ export const getSalesByDate = async (req, res) => {
 
     const sales = await Sale.find({
       createdAt: { $gte: start, $lte: end },
-    }).populate("product", "name price").populate("user", "username role");
+    })
+      .populate("product", "name cost")
+      .populate("user", "username role")
+      .sort({ createdAt: -1 });
 
     if (!sales.length) return res.status(404).json({ message: `No sales found on ${date}` });
 
-    const total = sales.reduce((sum, s) => sum + s.total, 0);
-    res.status(200).json({ message: `Sales for ${date} fetched`, sales, total });
+    const total = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    res.status(200).json({ 
+      message: `Sales for ${date} fetched`, 
+      sales, 
+      total 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -144,13 +204,13 @@ export const getAllUsersSalesByDate = async (req, res) => {
         const sales = await Sale.find({
           user: user._id,
           createdAt: { $gte: start, $lte: end },
-        }).populate("product", "name price");
+        }).populate("product", "name cost");
 
         return {
           username: user.username,
           role: user.role,
           sales,
-          total: sales.reduce((sum, s) => sum + s.total, 0),
+          total: sales.reduce((sum, s) => sum + s.totalAmount, 0),
         };
       })
     );
@@ -164,54 +224,69 @@ export const getAllUsersSalesByDate = async (req, res) => {
   }
 };
 
-
-
-// ------------------- UPDATE DAILY SALE -------------------
-export const updateDailySale = async (req, res) => {
+// Update Sale
+export const updateSale = async (req, res) => {
   try {
-    const { saleId } = req.params;
-    const { productId, quantity } = req.body;
+    const { productId, quantity, sellingCost } = req.body;
 
-    const sale = await Sale.findById(saleId);
+    const sale = await Sale.findById(req.params.id);
     if (!sale) return res.status(404).json({ error: "Sale not found" });
 
-    const oldProduct = await Product.findById(sale.product);
-    if (!oldProduct) return res.status(404).json({ error: "Original product not found" });
+    // If product changed, handle stock adjustments
+    if (productId && productId !== sale.product.toString()) {
+      const oldProduct = await Product.findById(sale.product);
+      const newProduct = await Product.findById(productId);
+      
+      if (!oldProduct || !newProduct) {
+        return res.status(404).json({ error: "Product not found" });
+      }
 
-    // Restore stock from old sale
-    oldProduct.stock += sale.quantity;
-    await oldProduct.save();
+      // Return stock to old product
+      oldProduct.stock += sale.quantity;
+      await oldProduct.save();
 
-    // If product changed, get new product
-    const newProduct = productId ? await Product.findById(productId) : oldProduct;
-    if (!newProduct) return res.status(404).json({ error: "New product not found" });
+      // Check if new product has enough stock
+      if (quantity > newProduct.stock) {
+        return res.status(400).json({ error: "Not enough stock for updated quantity" });
+      }
 
-    // Check stock availability for new quantity
-    if (quantity > newProduct.stock) return res.status(400).json({ error: "Not enough stock for updated quantity" });
+      // Deduct from new product
+      newProduct.stock -= quantity;
+      await newProduct.save();
+
+      sale.product = productId;
+    } else if (quantity !== sale.quantity) {
+      // Only quantity changed, adjust stock
+      const product = await Product.findById(sale.product);
+      if (!product) return res.status(404).json({ error: "Product not found" });
+
+      const quantityDiff = quantity - sale.quantity;
+      if (quantityDiff > product.stock) {
+        return res.status(400).json({ error: "Alaab kuuma Taalo Kaydka" });
+      }
+
+      product.stock -= quantityDiff;
+      await product.save();
+    }
 
     // Update sale
-    sale.product = newProduct._id;
     sale.quantity = quantity;
-    sale.sellingPrice = newProduct.price; // fixed price at sale time
-    sale.total = sale.sellingPrice * quantity;
+    sale.sellingCost = sellingCost;
+    sale.totalAmount = quantity * sellingCost;
     await sale.save();
 
-    // Deduct stock from new product
-    newProduct.stock -= quantity;
-    await newProduct.save();
+    await sale.populate("product", "name cost");
 
-    res.status(200).json({ message: "Daily sale updated successfully", sale });
+    res.status(200).json({ message: "Sale updated successfully", sale });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// ------------------- DELETE DAILY SALE -------------------
-export const deleteDailySale = async (req, res) => {
+// Delete Sale
+export const deleteSale = async (req, res) => {
   try {
-    const { saleId } = req.params;
-
-    const sale = await Sale.findById(saleId);
+    const sale = await Sale.findById(req.params.id);
     if (!sale) return res.status(404).json({ error: "Sale not found" });
 
     const product = await Product.findById(sale.product);
@@ -221,24 +296,8 @@ export const deleteDailySale = async (req, res) => {
       await product.save();
     }
 
-    await Sale.findByIdAndDelete(saleId);
-    res.status(200).json({ message: "Daily sale deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// ------------------- GET TODAY'S SALES -------------------
-export const getDailySales = async (req, res) => {
-  try {
-    const start = dayjs().startOf("day").toDate();
-    const end = dayjs().endOf("day").toDate();
-
-    const sales = await Sale.find({ createdAt: { $gte: start, $lte: end } })
-      .populate("product", "name price")
-      .populate("user", "username");
-
-    res.status(200).json({ sales });
+    await Sale.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Sale deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
