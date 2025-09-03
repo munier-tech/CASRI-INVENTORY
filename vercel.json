@@ -7,7 +7,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/uploads/(.*)", "dest": "/api/index.js" },
-    { "src": "/(.*)", "dest": "/FRONTEND1/dist/$1" },
-    { "src": "/", "dest": "/FRONTEND1/dist/index.html" }
+    { "src": "^/$", "dest": "/FRONTEND1/dist/index.html" },
+    { "src": "/(.*)", "dest": "/FRONTEND1/dist/$1" }
   ]
 }
