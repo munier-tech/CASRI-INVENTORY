@@ -8,6 +8,10 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/uploads/(.*)", "dest": "/api/index.js" },
-    { "src": "/(.*)", "dest": "FRONTEND1/dist/index.html" }
+    { "src": "/assets/(.*)", "dest": "/FRONTEND1/dist/assets/$1" },
+    { "src": "/favicon.ico", "dest": "/FRONTEND1/dist/favicon.ico" },
+    { "src": "/(.*)\.js", "dest": "/FRONTEND1/dist/$1.js" },
+    { "src": "/(.*)\.css", "dest": "/FRONTEND1/dist/$1.css" },
+    { "src": "/(.*)", "dest": "/FRONTEND1/dist/index.html" }
   ]
 }
