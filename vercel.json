@@ -1,17 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
   "builds": [
     { "src": "api/index.js", "use": "@vercel/node@2.0.0" },
-    { "src": "FRONTEND1/dist/**", "use": "@vercel/static@1.0.0" }
+    { "src": "FRONTEND1/package.json", "use": "@vercel/static-build@1.0.0", "config": { "distDir": "dist" } }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/uploads/(.*)", "dest": "/api/index.js" },
-    { "src": "/assets/(.*)", "dest": "/FRONTEND1/dist/assets/$1" },
-    { "src": "/favicon.ico", "dest": "/FRONTEND1/dist/favicon.ico" },
-    { "src": "/(.*)\.js", "dest": "/FRONTEND1/dist/$1.js" },
-    { "src": "/(.*)\.css", "dest": "/FRONTEND1/dist/$1.css" },
-    { "src": "/(.*)", "dest": "/FRONTEND1/dist/index.html" }
+    { "src": "/(.*)", "dest": "/FRONTEND1/dist/$1" },
+    { "src": "/", "dest": "/FRONTEND1/dist/index.html" }
   ]
 }
