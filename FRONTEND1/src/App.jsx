@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { Loader } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Homepage from './pages/Homepage';
@@ -18,13 +19,39 @@ import DailySales from './components/Admin/DailySales';
 import SalesByDate from './components/Admin/SalesByDate';
 import GetAllUsersDailySales from './components/Admin/UserProducts';
 import GetAllUsersSalesByDate from './components/Admin/UserProductsByDate';
+import Stock from './components/Admin/Stock';
+import useProductsStore from './store/useProductsStore';
 
 const App = () => {
   const { checkAuth, user, isLoading, authChecked } = useUserStore();
+  const { products, fetchProducts } = useProductsStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchProducts();
+    }
+  }, [user, fetchProducts]);
+
+  useEffect(() => {
+    if (!user?.role || user.role !== 'admin') return;
+    const lowCount = (products || []).filter(p => Number(p.stock ?? 0) > 0 && Number(p.stock ?? 0) <= Number(p.lowStockThreshold ?? 5)).length;
+    const soldCount = (products || []).filter(p => Number(p.stock ?? 0) <= 0).length;
+    if (lowCount > 0 || soldCount > 0) {
+      const parts = [];
+      if (soldCount > 0) parts.push(`${soldCount} sold out`);
+      if (lowCount > 0) parts.push(`${lowCount} low stock`);
+      toast.custom((t) => (
+        <div className={`px-4 py-3 rounded-lg shadow-lg ${t.visible ? 'animate-enter' : 'animate-leave'} bg-gray-800 border border-gray-700`}> 
+          <div className="text-white font-medium">Stock alert</div>
+          <div className="text-gray-300 text-sm mt-1">{parts.join(', ')}</div>
+        </div>
+      ), { id: 'stock-alert', duration: 4000 });
+    }
+  }, [products, user]);
 
   if (isLoading || !authChecked) {
     return (
@@ -55,6 +82,7 @@ const App = () => {
           <Route path="/HistorySalesDate" element={user?.role === "admin" ? <SalesByDate /> : <Navigate to="/" />} />
           <Route path="/UserDailySales" element={user?.role === "admin" ? <GetAllUsersDailySales /> : <Navigate to="/" />} />
           <Route path="/UserProductsByDate" element={user?.role === "admin" ? <GetAllUsersSalesByDate /> : <Navigate to="/" />} />
+          <Route path="/stock" element={user?.role === "admin" ? <Stock /> : <Navigate to="/" />} />
           <Route path="/categories" element={user?.role === "admin" ? <Categories /> : <Navigate to="/" />} />
           <Route path="/FinancialLogDate" element={user?.role === "admin" ? <FinancialLogDate /> : <Navigate to="/" />} />
         </Routes>

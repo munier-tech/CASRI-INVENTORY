@@ -1,9 +1,18 @@
 import { Link } from "react-router-dom";
-import { Lock, LogOut, UserPlus, LogIn, Home, ShoppingBag, Loader } from "lucide-react";
+import { Lock, LogOut, UserPlus, LogIn, Home, ShoppingBag, Loader, Boxes } from "lucide-react";
+import useProductsStore from "@/store/useProductsStore";
 import { useUserStore } from "@/store/useUserStore";
 
 const Navbar = () => {
   const { user, isLoading, dashboardAdmin, signOut } = useUserStore();
+  const { products, fetchProducts } = useProductsStore();
+
+  const lowOrSoldCount = (products || []).reduce((acc, p) => {
+    const threshold = Number(p.lowStockThreshold ?? 5);
+    const stock = Number(p.stock ?? 0);
+    if (stock <= 0 || stock <= threshold) return acc + 1;
+    return acc;
+  }, 0);
 
   const handleLogout = () => {
     signOut();
@@ -43,6 +52,17 @@ const Navbar = () => {
                 >
                   <ShoppingBag className="mr-1" size={18} />
                   <span className="hidden sm:inline">Sales</span>
+                </Link>
+
+                <Link
+                  to="/stock"
+                  className="relative flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
+                >
+                  <Boxes className="mr-1" size={18} />
+                  <span className="hidden sm:inline">Stock</span>
+                  {lowOrSoldCount > 0 && (
+                    <span className="ml-2 text-xs bg-rose-600 rounded-full px-2 py-0.5">{lowOrSoldCount}</span>
+                  )}
                 </Link>
 
                 <Link
