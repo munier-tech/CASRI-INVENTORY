@@ -147,7 +147,7 @@ const Dashboard = () => {
       label: content[language].tabs.users, 
       icon: User,
       subtabs: [
-        { id: "userDaily", label: content[language].subtabs.userDailySales, icon: Receipt, path: "/UserProducts" },
+        { id: "userDaily", label: content[language].subtabs.userDailySales, icon: Receipt, path: "/UserDailySales" },
         { id: "userHistory", label: content[language].subtabs.userSalesByDate, icon: FileText, path: "/UserProductsByDate" },
       ]
     },
@@ -177,18 +177,7 @@ const Dashboard = () => {
           </motion.h1>
           
           {/* Language Selector */}
-          <div className="flex items-center space-x-2 bg-gray-800 rounded-lg p-2">
-            <button
-              onClick={() => setLanguage("so")}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                language === "so" 
-                  ? "bg-emerald-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              SO
-            </button>
-            
+          <div className="flex items-center space-x-2 bg-gray-800 rounded-lg p-2">;
           </div>
         </div>
 

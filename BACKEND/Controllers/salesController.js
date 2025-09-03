@@ -37,7 +37,6 @@ export const createSale = async (req, res) => {
     
     // Populate product details in the response
     await sale.populate("product", "name cost");
-    await sale.populate("user", "username");
     
     res.status(201).json({
       message: "Sale created successfully",
@@ -117,7 +116,7 @@ export const getMyDailySales = async (req, res) => {
       .populate("product", "name cost")
       .sort({ createdAt: -1 });
 
-    if (!sales.length) return res.status(404).json({ message: "No sales today" });
+    if (!sales.length) return res.status(404).json({ message: "Maanta wax iib ah Ma dhicin" });
 
     const total = sales.reduce((sum, s) => sum + s.totalAmount, 0);
     res.status(200).json({ 
@@ -136,32 +135,48 @@ export const getUsersDailySales = async (req, res) => {
     const start = dayjs().startOf("day").toDate();
     const end = dayjs().endOf("day").toDate();
 
-    const users = await User.find({ role: { $in: ["employee", "admin"] } });
+    // Find sales for today and populate user + product
+    const sales = await Sale.find({
+      createdAt: { $gte: start, $lte: end },
+    })
+      .populate("user", "username role") // 👈 this must match your Sale schema
+      .populate("product", "name cost");
 
-    const results = await Promise.all(
-      users.map(async (user) => {
-        const sales = await Sale.find({
-          user: user._id,
-          createdAt: { $gte: start, $lte: end },
-        }).populate("product", "name cost");
+    if (!sales.length) {
+      return res
+        .status(404)
+        .json({ message: "wax iib ah looma helin Shaqaalaha Maanta" });
+    }
 
-        return {
-          username: user.username,
-          role: user.role,
-          sales,
-          total: sales.reduce((sum, s) => sum + s.totalAmount, 0),
+    // Group sales by user
+    const grouped = sales.reduce((acc, sale) => {
+      const userId = sale.user?._id || "unknown";
+
+      if (!acc[userId]) {
+        acc[userId] = {
+          username: sale.user?.username || "Unknown",
+          role: sale.user?.role || "N/A",
+          sales: [],
+          total: 0,
         };
-      })
-    );
+      }
 
-    const filteredResults = results.filter(r => r.sales.length > 0);
-    if (!filteredResults.length) return res.status(404).json({ message: "No sales today for any user" });
+      acc[userId].sales.push(sale);
+      acc[userId].total += sale.totalAmount;
 
-    res.status(200).json({ message: "Daily sales fetched", data: filteredResults });
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      message: "Daily sales fetched",
+      data: Object.values(grouped),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 // Get sales by date
 export const getSalesByDate = async (req, res) => {
@@ -174,10 +189,9 @@ export const getSalesByDate = async (req, res) => {
       createdAt: { $gte: start, $lte: end },
     })
       .populate("product", "name cost")
-      .populate("user", "username role")
       .sort({ createdAt: -1 });
 
-    if (!sales.length) return res.status(404).json({ message: `No sales found on ${date}` });
+    if (!sales.length) return res.status(404).json({ message: `Wax iib ah ma dhicin maanta${date}` });
 
     const total = sales.reduce((sum, s) => sum + s.totalAmount, 0);
     res.status(200).json({ 

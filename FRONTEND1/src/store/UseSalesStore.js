@@ -18,7 +18,7 @@ const useSalesStore = create((set) => ({
       const res = await axios.get("/sales");
       set({ sales: res.data, loading: false });
     } catch (err) {
-      set({ error: err.response?.data?.error || "Failed to fetch sales", loading: false });
+      set({ error: err.response?.data?.message || "Failed to fetch sales", loading: false });
     }
   },
 
@@ -33,7 +33,7 @@ const useSalesStore = create((set) => ({
       return res.data;
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to create sale",
+        error: err.response?.data?.message || "Failed to create sale",
         loading: false 
       });
       throw err;
@@ -51,7 +51,7 @@ const useSalesStore = create((set) => ({
       return res.data;
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to update sale",
+        error: err.response?.data?.message || "Failed to update sale",
         loading: false 
       });
       throw err;
@@ -68,7 +68,7 @@ const useSalesStore = create((set) => ({
       }));
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to delete sale",
+        error: err.response?.data?.message || "Failed to delete sale",
         loading: false 
       });
       throw err;
@@ -86,7 +86,7 @@ const useSalesStore = create((set) => ({
       });
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to fetch daily sales",
+        error: err.response?.data?.message || "Failed to fetch daily sales",
         loading: false 
       });
     }
@@ -102,7 +102,7 @@ const useSalesStore = create((set) => ({
       });
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to fetch users daily sales",
+        error: err.response?.data?.message || "Failed to fetch users daily sales",
         loading: false 
       });
     }
@@ -118,7 +118,7 @@ const useSalesStore = create((set) => ({
       });
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to fetch sales by date",
+        error: err.response?.data?.message || "Failed to fetch sales by date",
         loading: false 
       });
     }
@@ -134,7 +134,7 @@ const useSalesStore = create((set) => ({
       });
     } catch (err) {
       set({ 
-        error: err.response?.data?.error || "Failed to fetch all users sales by date",
+        error: err.response?.data?.message || "Failed to fetch all users sales by date",
         loading: false 
       });
     }

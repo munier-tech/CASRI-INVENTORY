@@ -105,32 +105,10 @@ const DailySales = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             {/* Date Selector */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiCalendar className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+           
 
             {/* Search Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Raadi iibka..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
+           
             <motion.button
               onClick={handleRefresh}
               whileHover={{ scale: 1.05 }}
@@ -203,7 +181,7 @@ const DailySales = () => {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-400">Soo dejineysa iibka...</p>
+              <p className="text-gray-400">iibka Maanta ...</p>
             </div>
           ) : error ? (
             <div className="text-center py-12 bg-red-900/20 rounded-xl">
@@ -228,7 +206,6 @@ const DailySales = () => {
                     <th className="px-4 py-3 text-green-300 font-semibold">Tirada</th>
                     <th className="px-4 py-3 text-purple-300 font-semibold">Qiimaha</th>
                     <th className="px-4 py-3 text-yellow-300 font-semibold">Wadarta</th>
-                    <th className="px-4 py-3 text-pink-300 font-semibold">Isticmaale</th>
                     <th className="px-4 py-3 text-gray-300 font-semibold">Wakhti</th>
                     <th className="px-4 py-3 text-red-300 font-semibold">Ficilada</th>
                   </tr>
@@ -303,14 +280,7 @@ const DailySales = () => {
                         )}
                       </td>
                       
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                            <FiUser className="h-4 w-4 text-white" />
-                          </div>
-                          <span className="text-gray-300">{sale.user?.username || "Qof"}</span>
-                        </div>
-                      </td>
+                     
                       
                       <td className="px-4 py-3 text-gray-400 text-sm">
                         {dayjs(sale.createdAt).format("HH:mm")}
