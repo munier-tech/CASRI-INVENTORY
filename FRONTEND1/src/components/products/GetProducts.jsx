@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import useProductsStore from "../../store/useProductsStore";
 import useCategoryStore from "../../store/useCategoryStore";
 
-const API_URL = "http://localhost:3000"; 
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:3000" : ""; 
 
 const GetProducts = () => {
   const { products, fetchProducts, deleteProduct, updateProduct } = useProductsStore();

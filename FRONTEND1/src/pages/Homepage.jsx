@@ -7,7 +7,7 @@ import useSalesStore from "../store/UseSalesStore";
 import { FiShoppingCart, FiPlus, FiMinus, FiX, FiRefreshCw, FiSearch, FiArrowLeft } from "react-icons/fi";
 import { AlertTriangle, XCircle, Zap } from "lucide-react";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:3000" : "";
 
 const CreateSale = () => {
   const { products, fetchProducts } = useProductsStore();
