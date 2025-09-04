@@ -8,13 +8,14 @@ This project is configured for single repository deployment on Vercel, combining
 Set up these environment variables in your Vercel dashboard:
 
 **Required:**
-- `MONGODB_URI` - Your MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT tokens
+- `MONGO_DB_URL` - Your MongoDB connection string
+- `TOKEN_SECRET_KEY` - Secret key for access tokens
+- `REFRESH_TOKEN_SECRET_KEY` - Secret key for refresh tokens
 - `NODE_ENV=production`
 
 **Optional:**
-- `REDIS_URL` - Redis connection string (if using Redis)
-- `FRONTEND_URL` - Will auto-detect from VERCEL_URL if not set
+- `REDIS_UPSTASH_URL` - Redis connection string (if using Redis)
+- `CORS_ORIGIN` - Frontend URL for CORS (will auto-detect from VERCEL_URL if not set)
 
 ### 2. Deploy to Vercel
 
@@ -37,8 +38,11 @@ vercel login
 vercel
 
 # Set environment variables
-vercel env add MONGODB_URI
-vercel env add JWT_SECRET
+vercel env add MONGO_DB_URL
+vercel env add TOKEN_SECRET_KEY
+vercel env add REFRESH_TOKEN_SECRET_KEY
+vercel env add REDIS_UPSTASH_URL
+vercel env add CORS_ORIGIN
 vercel env add NODE_ENV
 
 # Deploy to production

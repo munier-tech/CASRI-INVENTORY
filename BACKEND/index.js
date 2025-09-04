@@ -34,7 +34,10 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production" 
-      ? [process.env.FRONTEND_URL, process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://your-app.vercel.app"] 
+      ? [
+          process.env.CORS_ORIGIN, 
+          process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+        ].filter(Boolean)
       : "http://localhost:5173",
     credentials: true,
   })
