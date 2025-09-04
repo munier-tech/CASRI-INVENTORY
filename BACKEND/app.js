@@ -21,24 +21,51 @@ import { connectdb } from "./lib/connectDB.js";
 dotenv.config();
 const app = express();
 
+const PORT = process.env.PORT || 5000;
+
+// Configure CORS for different environments
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.CORS_ORIGIN, "https://casri-inventory.vercel.app"] 
+    : 'http://localhost:5173',
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 // Ensure uploads directory exists (best-effort; not persistent on serverless)
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   try { fs.mkdirSync(uploadsDir); } catch {}
 }
 
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    credentials: true,
-  })
-);
-
 // Static uploads
 app.use("/uploads", express.static(uploadsDir));
+
+// API test endpoint
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'CASRI Inventory Management System API is running!', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    cors: {
+      allowedOrigins: Array.isArray(corsOptions.origin) 
+        ? corsOptions.origin.join(', ') 
+        : corsOptions.origin,
+      credentials: corsOptions.credentials
+    }
+  });
+});
 
 // API routes
 app.use("/api/auth", authRouter);
@@ -50,9 +77,22 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/financial", financialRouter);
 app.use("/api/sales", SalesRouter);
 
-// Connect DB on cold start
-connectdb();
+// Connect to database immediately
+connectdb().then(() => {
+  console.log("Connected to MongoDB successfully");
+}).catch(err => {
+  console.error("Failed to connect to MongoDB:", err);
+});
 
+// Only start server if not in serverless environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+  });
+}
+
+// Export app for Vercel serverless
 export default app;
 
 

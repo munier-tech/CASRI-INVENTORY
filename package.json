@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon BACKEND/index.js",
     "start": "node BACKEND/index.js",
-    "build": "npm install && npm install --prefix FRONTEND1 && npm run build --prefix FRONTEND1"
+    "build": "echo 'Build handled by Vercel'"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
