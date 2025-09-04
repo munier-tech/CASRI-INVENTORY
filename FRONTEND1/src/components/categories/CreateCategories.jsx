@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, List, Edit, Trash2, X, Check } from "lucide-react";
 import useCategoryStore from "../../store/useCategoryStore";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_BASE = import.meta.env.MODE === "development" ? "http://localhost:3000" : "";
 
 const Categories = ({ language = "so" }) => {
   const {

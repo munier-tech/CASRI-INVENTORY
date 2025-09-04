@@ -6,8 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon BACKEND/index.js",
+    "dev:frontend": "npm run dev --prefix FRONTEND1",
     "start": "node BACKEND/index.js",
-    "build": "npm install && npm install --prefix FRONTEND1 && npm run build --prefix FRONTEND1"
+    "build": "npm install --prefix FRONTEND1 && npm run build --prefix FRONTEND1",
+    "build:frontend": "npm run build --prefix FRONTEND1",
+    "install:all": "npm install && npm install --prefix FRONTEND1",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

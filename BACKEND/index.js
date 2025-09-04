@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 import fs from "fs";
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // Middleware
@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production" 
-      ? [process.env.FRONTEND_URL, "https://your-frontend-domain.vercel.app"] 
+      ? [process.env.FRONTEND_URL, process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://your-app.vercel.app"] 
       : "http://localhost:5173",
     credentials: true,
   })
@@ -63,8 +63,15 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Start server
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
-  connectdb();
-});
+// Connect to database
+connectdb();
+
+// Export the Express app for Vercel
+export default app;
+
+// Start server for local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log("Server running on port", PORT);
+  });
+}
