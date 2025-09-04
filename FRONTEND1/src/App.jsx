@@ -42,11 +42,11 @@ const App = () => {
     const soldCount = (products || []).filter(p => Number(p.stock ?? 0) <= 0).length;
     if (lowCount > 0 || soldCount > 0) {
       const parts = [];
-      if (soldCount > 0) parts.push(`${soldCount} sold out`);
-      if (lowCount > 0) parts.push(`${lowCount} low stock`);
+      if (soldCount > 0) parts.push(`${soldCount} Alaab ayaa dhamaatay`);
+      if (lowCount > 0) parts.push(`${lowCount} Alaab ayaa ku dhow inay dhamaadan`);
       toast.custom((t) => (
         <div className={`px-4 py-3 rounded-lg shadow-lg ${t.visible ? 'animate-enter' : 'animate-leave'} bg-gray-800 border border-gray-700`}> 
-          <div className="text-white font-medium">Stock alert</div>
+          <div className="text-white font-medium">La Soco kaydka alaabta</div>
           <div className="text-gray-300 text-sm mt-1">{parts.join(', ')}</div>
         </div>
       ), { id: 'stock-alert', duration: 4000 });

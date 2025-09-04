@@ -17,7 +17,8 @@ import {
   Receipt,
   ChevronDown,
   ChevronRight,
-  Globe
+  Globe,
+  Boxes
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useProductsStore from "../store/useProductsStore";
@@ -43,6 +44,7 @@ const Dashboard = () => {
       tabs: {
         dashboard: "Dashboard",
         products: "Alaabta",
+        stock: "Kaydka",
         categories: "Qeybta Alaabta",
         sales: "Iibka",
         users: "Isticmaalayaasha",
@@ -50,6 +52,7 @@ const Dashboard = () => {
       },
       subtabs: {
         createProduct: "Abuur Alaab",
+        stock: "Hel Kaydka",
         createCategory: "Abuur Qayb Cusub",
         productList: "Liiska Alaabta",
         dailySales: "Iibka Maanta",
@@ -67,27 +70,32 @@ const Dashboard = () => {
         { title: "Taariikhda Iibka", value: "Iibka" },
         { title: "Taariikhda Amaahda", value: "Amaah" },
         { title: "Xisaab Xidhka", value: "Xisaab" },
-        { title: "Taariikhda Xisaabta", value: "Xisaab" }
+        { title: "Taariikhda Xisaabta", value: "Xisaab" },
+        { title: "Kaydka", value: "Kaydka", change: "#" } // Added for stock
       ],
-      welcome: "Soo dhawoow Dashboard-ka",
+      welcome: "ku Soo dhawoow Dashboard-ka",
       welcomeDesc: "Halkan waxaad ka heli kartaa macluumaadka guud ee ganacsigaaga iyo xogta dhaqaale.",
       selectSubtab: "Dooro qeybta hoose ee aad rabto inaad wax ka qabato.",
       generalReport: "Warbixinta Guud",
       finance: "Dhaqaale",
       financeDesc: "Halkan waxaad arki kartaa dhaqaalahaga guud",
-      productsDesc: "Maareynta alaabtaaga iyo bakhaarrada"
+      productsDesc: "Maareynta alaabta iyo bakhaarka"
     },
     en: {
       dashboard: "Dashboard",
       tabs: {
         dashboard: "Dashboard",
         products: "Products",
+        stock: "Stock",
+        categories: "Categories",
         sales: "Sales",
         users: "Users",
         financial: "Financial"
       },
       subtabs: {
         createProduct: "Create Product",
+        stock: "View Stock",
+        createCategory: "Create Category",
         productList: "Product List",
         dailySales: "Daily Sales",
         salesByDate: "Sales by Date",
@@ -104,7 +112,8 @@ const Dashboard = () => {
         { title: "Sales History", value: "Sales" },
         { title: "Liability History", value: "Liability" },
         { title: "Accounting", value: "Accounting" },
-        { title: "Accounting History", value: "Accounting" }
+        { title: "Accounting History", value: "Accounting" },
+        { title: "Stock", value: "Stock", change: "#" } // Added for stock
       ],
       welcome: "Welcome to your Dashboard",
       welcomeDesc: "Here you can find an overview of your business and financial data.",
@@ -134,6 +143,7 @@ const Dashboard = () => {
     { icon: <FileText size={20} />, path: "/HistoryLiabilityByDate" },
     { icon: <FileTerminalIcon size={20} />, path: "/FinancialLogForm" },
     { icon: <FileTerminalIcon size={20} />, path: "/FinancialLogDate" },
+    { icon: <Boxes size={20} />, path: "/stock" },
   ];
 
   const tabs = [
@@ -150,6 +160,14 @@ const Dashboard = () => {
       subtabs: [
         { id: "create", label: content[language].subtabs.createProduct, icon: PlusCircle, path: "/createProduct" },
         { id: "list", label: content[language].subtabs.productList, icon: ShoppingBasket, path: "/products" },
+      ]
+    },
+    { 
+      id: "stock", 
+      label: content[language].tabs.stock, 
+      icon: Boxes,
+      subtabs: [
+        { id: "get", label: content[language].subtabs.stock, icon: Boxes, path: "/stock" },
       ]
     },
     { 

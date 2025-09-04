@@ -25,7 +25,7 @@ const LowStockReminder = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-gray-500">Loading stock info...</p>;
+    return <p className="text-gray-500">...</p>;
   }
 
   if (lowStockProducts.length === 0) {

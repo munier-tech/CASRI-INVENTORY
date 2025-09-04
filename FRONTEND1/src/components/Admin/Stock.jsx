@@ -6,9 +6,9 @@ import useProductsStore from "../../store/useProductsStore";
 const API_URL = "http://localhost:3000";
 
 const tabs = [
-  { key: "soldout", label: "Sold out", icon: XCircle, color: "text-rose-400" },
-  { key: "low", label: "Close to sold out", icon: AlertTriangle, color: "text-yellow-400" },
-  { key: "fine", label: "Fine", icon: CheckCircle2, color: "text-emerald-400" },
+  { key: "soldout", label: "Alaabaha Dhamaaday", icon: XCircle, color: "text-rose-400" },
+  { key: "low", label: "Alaabta sii Dhamaanaya", icon: AlertTriangle, color: "text-yellow-400" },
+  { key: "fine", label: "Alaabta Taala", icon: CheckCircle2, color: "text-emerald-400" },
 ];
 
 const Stock = () => {
@@ -45,8 +45,8 @@ const Stock = () => {
           className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700"
         >
           <div className="px-6 py-5 border-b border-gray-700">
-            <h2 className="text-2xl font-bold text-white">Stock Overview</h2>
-            <p className="text-gray-400">Monitor low and sold-out products</p>
+            <h2 className="text-2xl font-bold text-white">Qolka Kaydka Alaabta</h2>
+            <p className="text-gray-400">alaabta dhamaatay iyo kuwa u dhow inay dhamaadaan</p>
           </div>
 
           <div className="px-6 pt-4">
@@ -72,22 +72,21 @@ const Stock = () => {
 
           <div className="p-6 overflow-x-auto">
             {loading ? (
-              <div className="text-center text-gray-300">Loading...</div>
+              <div className="text-center text-gray-300">...</div>
             ) : listForTab.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <PackageSearch className="mb-3" />
-                <span>No products in this category</span>
+                <span>Wax alaab ah majiraan qaybtan</span>
               </div>
             ) : (
               <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="bg-gray-700 text-left">
-                    <th className="px-4 py-3 text-emerald-300 font-semibold">Image</th>
-                    <th className="px-4 py-3 text-emerald-300 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-emerald-300 font-semibold">Stock</th>
-                    <th className="px-4 py-3 text-emerald-300 font-semibold">Threshold</th>
-                    <th className="px-4 py-3 text-emerald-300 font-semibold">Category</th>
-                  </tr>
+                    <th className="px-4 py-3 text-emerald-300 font-semibold">Sawir</th>
+                    <th className="px-4 py-3 text-emerald-300 font-semibold">Magac</th>
+                    <th className="px-4 py-3 text-emerald-300 font-semibold">Tirada kuu Taala</th>
+                    <th className="px-4 py-3 text-emerald-300 font-semibold">Qaybta ay tirsantahy</th>
+                </tr>
                 </thead>
                 <tbody>
                   {listForTab.map((product, index) => (
@@ -107,7 +106,6 @@ const Stock = () => {
                       </td>
                       <td className="px-4 py-3 text-white">{product.name}</td>
                       <td className="px-4 py-3 text-gray-300">{product.stock}</td>
-                      <td className="px-4 py-3 text-gray-300">{product.lowStockThreshold ?? 5}</td>
                       <td className="px-4 py-3 text-gray-300">{product.category?.name || "-"}</td>
                     </motion.tr>
                   ))}
@@ -122,5 +120,3 @@ const Stock = () => {
 };
 
 export default Stock;
-
-

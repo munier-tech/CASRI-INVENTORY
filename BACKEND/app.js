@@ -21,7 +21,7 @@ import { connectdb } from "./lib/connectDB.js";
 dotenv.config();
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT = 3001;
 
 // Configure CORS for different environments
 const corsOptions = {

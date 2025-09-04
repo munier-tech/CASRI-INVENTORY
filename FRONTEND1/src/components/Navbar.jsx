@@ -29,7 +29,7 @@ const Navbar = () => {
                 CASRI
               </h1>
               <p className="text-2xl font-bold bg-white text-transparent bg-clip-text -mt-2">
-                ELECTRONICS
+                INVENTORY
               </p>
             </Link>
           </div>
@@ -38,20 +38,20 @@ const Navbar = () => {
           <nav className="flex items-center space-x-2 sm:space-x-4">
             <Link
               to="/"
-              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
+              className="hidden items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
             >
               <Home className="mr-1" size={18} />
-              <span className="hidden sm:inline">Home</span>
+              <span className="hidden sm:inline">bogga hore</span>
             </Link>
 
             {user && dashboardAdmin() && (
               <>
                 <Link
                   to="/DailySales"
-                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
+                  className="hidden  items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
                 >
                   <ShoppingBag className="mr-1" size={18} />
-                  <span className="hidden sm:inline">Sales</span>
+                  <span className="hidden sm:inline">Iibka</span>
                 </Link>
 
                 <Link
@@ -59,7 +59,7 @@ const Navbar = () => {
                   className="relative flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors"
                 >
                   <Boxes className="mr-1" size={18} />
-                  <span className="hidden sm:inline">Stock</span>
+                  <span className="hidden sm:inline">Qolka Alaabta</span>
                   {lowOrSoldCount > 0 && (
                     <span className="ml-2 text-xs bg-rose-600 rounded-full px-2 py-0.5">{lowOrSoldCount}</span>
                   )}
