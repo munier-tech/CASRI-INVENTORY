@@ -33,7 +33,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    origin: process.env.NODE_ENV === "production" 
+      ? [process.env.FRONTEND_URL, "https://your-frontend-domain.vercel.app"] 
+      : "http://localhost:5173",
     credentials: true,
   })
 );
