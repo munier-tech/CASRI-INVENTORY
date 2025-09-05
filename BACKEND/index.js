@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3002;
 
 // Multer uploads folder must exist
 import fs from "fs";
@@ -11,15 +11,15 @@ import path from "path";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import authRouter from "./routes/authRouter.js";
-import userRouter from "./routes/userRouter.js";
-import productRouter from "./routes/productRouter.js";
-import historyRouter from "./routes/historyRouter.js";
-import liabilityRouter from "./routes/liabilityRouter.js";
-import categoryRouter from "./routes/categoryRouter.js";
-import financialRouter from "./routes/financialRouter.js";
-import SalesRouter from "./routes/SalesRouter.js";
-import connectdb from "./config/db.js";
+import authRouter from "./Routes/authRoute.js";
+import userRouter from "./Routes/userRoute.js";
+import productRouter from "./Routes/productsRouter.js";
+import historyRouter from "./Routes/historyRoute.js";
+import liabilityRouter from "./Routes/LiabilityRoute.js";
+import financialRouter from "./Routes/financialRoute.js";
+import categoryRouter from "./Routes/categoryRoute.js";
+import SalesRouter from "./Routes/salesRoute.js";
+import {connectdb} from "./lib/connectDB.js";
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {

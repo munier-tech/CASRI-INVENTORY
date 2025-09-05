@@ -21,7 +21,7 @@ import { connectdb } from "./lib/connectDB.js";
 dotenv.config();
 const app = express();
 
-const PORT = 3001;
+const PORT = 3002;
 
 // Configure CORS for different environments
 const corsOptions = {
@@ -92,7 +92,6 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   });
 }
 
-// Export app for Vercel serverless
 export default app;
 
 
