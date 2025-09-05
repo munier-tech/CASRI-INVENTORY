@@ -8,7 +8,7 @@ import path from "path";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 import authRouter from "./Routes/authRoute.js";
 import userRouter from "./Routes/userRoute.js";
 import productRouter from "./Routes/productsRouter.js";

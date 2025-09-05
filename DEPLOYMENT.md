@@ -84,7 +84,7 @@ npm install && npm run install:all
 npm run dev
 
 # Run separately
-npm run dev:backend   # Backend on port 5000
+npm run dev:backend   # Backend on port 3000
 npm run dev:frontend  # Frontend on port 5173
 
 # Build for production
