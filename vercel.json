@@ -37,10 +37,5 @@
       "src": "/(.*)",
       "dest": "/FRONTEND1/dist/index.html"
     }
-  ],
-  "functions": {
-    "BACKEND/index.js": {
-      "maxDuration": 30
-    }
+  ]
   }
-}

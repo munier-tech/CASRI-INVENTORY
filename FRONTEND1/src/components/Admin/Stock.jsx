@@ -8,7 +8,7 @@ const API_URL = "http://localhost:3000";
 const tabs = [
   { key: "soldout", label: "Alaabaha Dhamaaday", icon: XCircle, color: "text-rose-400" },
   { key: "low", label: "Alaabta sii Dhamaanaya", icon: AlertTriangle, color: "text-yellow-400" },
-  { key: "fine", label: "Alaabta Taala", icon: CheckCircle2, color: "text-emerald-400" },
+  { key: "fine", label: "Alaabta si buuxa u taala", icon: CheckCircle2, color: "text-emerald-400" },
 ];
 
 const Stock = () => {
