@@ -1,46 +1,46 @@
 {
   "version": 2,
-"buildCommand": "npm run build",
-"installCommand": "npm install",
-"builds": [
-  {
-    "src": "BACKEND/index.js",
-    "use": "@vercel/node"
-  },
-  {
-    "src": "FRONTEND1/dist/**",
-    "use": "@vercel/static"
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm run install:all",
+  "builds": [
+    {
+      "src": "BACKEND/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "FRONTEND1/dist/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "BACKEND/index.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/FRONTEND1/dist/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/FRONTEND1/dist/favicon.ico"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "dest": "/FRONTEND1/dist/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/FRONTEND1/dist/index.html"
+    }
+  ],
+  "functions": {
+    "BACKEND/index.js": {
+      "maxDuration": 30
+    }
   }
-],
-"routes": [
-  {
-    "src": "/uploads/(.*)",
-    "dest": "/uploads/$1"
-  },
-  {
-    "src": "/api/(.*)",
-    "dest": "BACKEND/index.js"
-  },
-  {
-    "src": "/assets/(.*)",
-    "dest": "/FRONTEND1/dist/assets/$1"
-  },
-  {
-    "src": "/favicon.ico",
-    "dest": "/FRONTEND1/dist/favicon.ico"
-  },
-  {
-    "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-    "dest": "/FRONTEND1/dist/$1"
-  },
-  {
-    "src": "/(.*)",
-    "dest": "/FRONTEND1/dist/index.html"
-  }
-],
-"functions": {
-  "BACKEND/index.js": {
-    "maxDuration": 30
-  }
-}
 }
