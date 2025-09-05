@@ -1,143 +1,110 @@
-# Single Repository Vercel Deployment Guide
+# 🚀 Unified Vercel Deployment Guide
 
-This project is configured for single repository deployment on Vercel, combining both frontend and backend in one deployment.
+Your CASRI Management System is now configured for **unified deployment from the root directory**.
 
-## 🚀 Deployment Steps
+## ✅ What's Changed
 
-### 1. Environment Variables
-Set up these environment variables in your Vercel dashboard:
+- **Single package.json** in root with all dependencies
+- **Unified build process** - everything deploys together
+- **Simplified Vercel configuration** - no separate deployments needed
 
-**Required:**
-- `MONGO_DB_URL` - Your MongoDB connection string
-- `TOKEN_SECRET_KEY` - Secret key for access tokens
-- `REFRESH_TOKEN_SECRET_KEY` - Secret key for refresh tokens
-- `NODE_ENV=production`
+## 🚀 How to Deploy to Vercel
 
-**Optional:**
-- `REDIS_UPSTASH_URL` - Redis connection string (if using Redis)
-- `CORS_ORIGIN` - Frontend URL for CORS (will auto-detect from VERCEL_URL if not set)
+### **Method 1: Vercel Dashboard (Recommended)**
 
-### 2. Deploy to Vercel
+1. **Go to [vercel.com](https://vercel.com)** and sign in with GitHub
 
-#### Option A: Via Vercel Dashboard
-1. Connect your GitHub repository to Vercel
-2. Import the project
-3. Vercel will automatically detect the configuration from `vercel.json`
-4. Add environment variables in the dashboard
-5. Deploy!
+2. **Click "New Project"** → **"Import Git Repository"**
 
-#### Option B: Via Vercel CLI
+3. **Select your CASRI repository**
+
+4. **Configure Project:**
+   - **Project Name:** `casri-management-system`
+   - **Framework Preset:** `Other`
+   - **Root Directory:** `./` (default)
+   - **Build Command:** `npm run vercel-build`
+   - **Install Command:** `npm install && npm run install:all`
+   - **Output Directory:** `FRONTEND1/dist`
+
+5. **Set Environment Variables:**
+   ```
+   MONGO_DB_URL=mongodb+srv://username:password@cluster.mongodb.net/database
+   TOKEN_SECRET_KEY=your_jwt_secret_key
+   REFRESH_TOKEN_SECRET_KEY=your_refresh_secret_key
+   REDIS_UPSTASH_URL=your_redis_url (optional)
+   CORS_ORIGIN=https://your-app-name.vercel.app
+   NODE_ENV=production
+   ```
+
+6. **Click "Deploy"** 🎉
+
+### **Method 2: Vercel CLI**
+
 ```bash
 # Install Vercel CLI
-npm i -g vercel
+npm install -g vercel
 
-# Login to Vercel
+# Login
 vercel login
 
-# Deploy
+# Deploy from your project root
 vercel
 
-# Set environment variables
-vercel env add MONGO_DB_URL
-vercel env add TOKEN_SECRET_KEY
-vercel env add REFRESH_TOKEN_SECRET_KEY
-vercel env add REDIS_UPSTASH_URL
-vercel env add CORS_ORIGIN
-vercel env add NODE_ENV
-
-# Deploy to production
-vercel --prod
+# Follow prompts:
+# - Set up and deploy? Y
+# - Which scope? (your account)
+# - Link to existing project? N
+# - Project name: casri-management-system
+# - Directory: ./
+# - Override settings? N
 ```
 
-## 📁 Project Structure
+## 📁 Project Structure (Unified)
 
 ```
-/
-├── BACKEND/           # Express.js API
-│   ├── index.js      # Main server file (exported for Vercel)
-│   ├── Routes/       # API routes
-│   ├── Controllers/  # Route controllers
-│   └── models/       # Database models
-├── FRONTEND1/        # React frontend
-│   ├── src/          # Source files
-│   ├── dist/         # Built files (generated)
-│   └── package.json  # Frontend dependencies
-├── uploads/          # File uploads directory
-├── vercel.json       # Vercel configuration
-└── package.json      # Root dependencies & build scripts
+├── package.json          # All dependencies (backend + frontend)
+├── vercel.json          # Vercel configuration
+├── BACKEND/             # Backend code
+│   ├── index.js        # Main server file
+│   └── ...             # All backend files
+├── FRONTEND1/          # Frontend code
+│   ├── src/            # React source
+│   ├── dist/           # Built frontend (generated)
+│   └── package.json    # Frontend-specific config
+└── .env                # Environment variables
 ```
 
-## 🔧 How It Works
-
-### Build Process
-1. `npm install` - Install root dependencies
-2. `npm run build` - Builds frontend to `FRONTEND1/dist/`
-
-### Routing
-- `/api/*` → Backend (serverless function)
-- `/uploads/*` → Static file uploads
-- `/*` → Frontend (React SPA)
-
-### Environment Detection
-- Development: Uses `http://localhost:3000` for API calls
-- Production: Uses relative URLs (`/api/*`)
-
-## 🛠️ Local Development
+## 🛠️ Development Commands
 
 ```bash
 # Install all dependencies
-npm run install:all
+npm install && npm run install:all
 
-# Start backend (development)
+# Run both frontend and backend
 npm run dev
 
-# Start frontend (in another terminal)
-npm run dev:frontend
+# Run separately
+npm run dev:backend   # Backend on port 5000
+npm run dev:frontend  # Frontend on port 5173
+
+# Build for production
+npm run vercel-build
 ```
 
-## 📝 Configuration Details
+## ✨ Benefits of Unified Deployment
 
-### vercel.json
-- Configures serverless function for backend
-- Sets up routing for API and static files
-- Handles SPA routing for React
+- **Single deployment** - No confusion about multiple apps
+- **Simplified configuration** - One vercel.json handles everything
+- **Easier management** - All dependencies in one place
+- **Faster deployment** - Single build process
+- **Cost effective** - One Vercel project instead of multiple
 
-### Backend Changes
-- Exports Express app for Vercel serverless
-- Auto-detects production environment
-- Handles CORS for Vercel domains
+## 🔧 After Deployment
 
-### Frontend Changes
-- Uses environment-aware API URLs
-- Builds to `dist/` directory
-- Configured for SPA routing
+1. **Copy your Vercel URL** (e.g., `https://casri-management-system.vercel.app`)
+2. **Update CORS_ORIGIN** in Vercel environment variables
+3. **Test your app** - both frontend and API should work
 
-## 🔍 Troubleshooting
+Your app will be live at: `https://your-app-name.vercel.app`
 
-### Common Issues:
-1. **CORS Errors**: Check environment variables and CORS configuration
-2. **API Not Found**: Ensure routes start with `/api/`
-3. **Static Files**: Check upload directory permissions
-4. **Build Failures**: Verify all dependencies are installed
-
-### Logs:
-```bash
-# View deployment logs
-vercel logs [deployment-url]
-
-# View function logs
-vercel logs --follow
-```
-
-## 🎯 Production Checklist
-
-- [ ] Environment variables set in Vercel dashboard
-- [ ] MongoDB connection string is correct
-- [ ] JWT secret is secure and set
-- [ ] CORS origins include your domain
-- [ ] Build completes successfully
-- [ ] API endpoints respond correctly
-- [ ] Frontend loads and can communicate with backend
-- [ ] File uploads work (if applicable)
-
-Your app should now be deployed and accessible via your Vercel domain!
+**That's it!** 🎉 Your CASRI Management System is now deployed as a unified application on Vercel.
