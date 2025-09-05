@@ -1,26 +1,25 @@
-import app from "./app.js";
 import dotenv from "dotenv";
-
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
-
-// Multer uploads folder must exist
-import fs from "fs";
-import path from "path";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import authRouter from "./routes/authRouter.js";
-import userRouter from "./routes/userRouter.js";
-import productRouter from "./routes/productRouter.js";
-import historyRouter from "./routes/historyRouter.js";
-import liabilityRouter from "./routes/liabilityRouter.js";
-import categoryRouter from "./routes/categoryRouter.js";
-import financialRouter from "./routes/financialRouter.js";
-import SalesRouter from "./routes/SalesRouter.js";
-import connectdb from "./config/db.js";
+import fs from "fs";
+import path from "path";
 
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+import authRouter from "./Routes/authRoute.js";
+import userRouter from "./Routes/userRoute.js";
+import productRouter from "./Routes/productsRouter.js";
+import historyRouter from "./Routes/historyRoute.js";
+import liabilityRouter from "./Routes/LiabilityRoute.js";
+import categoryRouter from "./Routes/categoryRoute.js";
+import financialRouter from "./Routes/financialRoute.js";
+import SalesRouter from "./Routes/salesRoute.js";
+import { connectdb } from "./lib/connectDB.js";
+
+// Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -28,6 +27,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
@@ -41,8 +41,29 @@ app.use(
   })
 );
 
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 // Serve uploads statically
 app.use("/uploads", express.static(uploadsDir));
+
+// API test endpoint
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'CASRI Inventory Management System API is running!', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    cors: {
+      allowedOrigins: process.env.NODE_ENV === "production" 
+        ? [process.env.CORS_ORIGIN, process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null].filter(Boolean)
+        : "http://localhost:5173",
+      credentials: true
+    }
+  });
+});
 
 // Routes
 app.use("/api/auth", authRouter);
@@ -65,7 +86,11 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Connect to database
-connectdb();
+connectdb().then(() => {
+  console.log("Connected to MongoDB successfully");
+}).catch(err => {
+  console.error("Failed to connect to MongoDB:", err);
+});
 
 // Export the Express app for Vercel
 export default app;
@@ -73,6 +98,8 @@ export default app;
 // Start server for local development
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
-    console.log("Server running on port", PORT);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 CORS Origin: ${process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : "http://localhost:5173"}`);
   });
 }

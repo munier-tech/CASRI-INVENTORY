@@ -24,8 +24,16 @@ export const generateToken = (userId) => {
 }
 
 
-export const storeRefreshToken = async (userId,refreshToken) => {
-  await redis.set(`refreshToken:${userId}`,refreshToken , "EX", 60 * 60 * 24 * 365)
+export const storeRefreshToken = async (userId, refreshToken) => {
+  if (redis) {
+    try {
+      await redis.set(`refreshToken:${userId}`, refreshToken, "EX", 60 * 60 * 24 * 365);
+    } catch (error) {
+      console.warn('Failed to store refresh token in Redis:', error.message);
+    }
+  } else {
+    console.warn('Redis not available, refresh token not stored');
+  }
 }   
 
 

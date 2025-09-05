@@ -96,10 +96,17 @@ export const refreshToken = async (req, res ) => {
     }
 
     const decoded = jwt.verify(refreshToken , process.env.REFRESH_TOKEN_SECRET_KEY);
-    const storedRefreshToken = await redis.get(`refreshToken:${decoded.userId}`)
-
-    if (storedRefreshToken !== refreshToken) {
-      res.status(401).json({ message : "invalid refreshToken"})
+    
+    // Only validate against Redis if Redis is available
+    if (redis) {
+      try {
+        const storedRefreshToken = await redis.get(`refreshToken:${decoded.userId}`)
+        if (storedRefreshToken !== refreshToken) {
+          res.status(401).json({ message : "invalid refreshToken"})
+        }
+      } catch (error) {
+        console.warn('Redis validation failed, proceeding without validation:', error.message);
+      }
     }
     
 
@@ -141,14 +148,22 @@ export const LogOut = async (req, res)  => {
     const refreshToken = req.cookies.refreshToken
     
 
-    if (accessToken) {
-      const decoded = jwt.verify(accessToken, process.env.TOKEN_SECRET_KEY)
-      await redis.del(`accessToken:${decoded.userId}`)
+    if (accessToken && redis) {
+      try {
+        const decoded = jwt.verify(accessToken, process.env.TOKEN_SECRET_KEY)
+        await redis.del(`accessToken:${decoded.userId}`)
+      } catch (error) {
+        console.warn('Failed to delete access token from Redis:', error.message);
+      }
     }
 
-    if (refreshToken) {
-      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY)
-      await redis.del(`refreshtoken:${decoded.userId}`)
+    if (refreshToken && redis) {
+      try {
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY)
+        await redis.del(`refreshtoken:${decoded.userId}`)
+      } catch (error) {
+        console.warn('Failed to delete refresh token from Redis:', error.message);
+      }
     }
 
     res.clearCookie("accessToken");
