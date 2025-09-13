@@ -7,5 +7,5 @@ const baseURL =
 
 export const api = axios.create({
   baseURL,
-  // withCredentials: true, // uncomment if using cookies/sessions
+  // withCredentials: true, // enable if using cookies/sessions
 });

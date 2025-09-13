@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toArray } from '../utils/normalize';
 
-/**
- * Generic collection hook wrapping a resource service with:
- * - fetchList, createOne, updateOne, deleteOne, getEntityId
- */
 export function useCollection(service) {
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

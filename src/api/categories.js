@@ -10,16 +10,14 @@ export async function createCategory(payload) {
   const { data } = await api.post('/api/categories', payload, {
     headers: { 'Content-Type': 'application/json' },
   });
-  const entity = pickEntity(data);
-  return entity || null;
+  return pickEntity(data) || null;
 }
 
 export async function updateCategory(id, changes) {
   const { data } = await api.patch(`/api/categories/${id}`, changes, {
     headers: { 'Content-Type': 'application/json' },
   });
-  const entity = pickEntity(data);
-  return entity || null;
+  return pickEntity(data) || null;
 }
 
 export async function deleteCategory(id) {
