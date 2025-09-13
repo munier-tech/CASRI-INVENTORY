@@ -15,7 +15,6 @@ import {
   ShoppingBasket,
   Calendar,
   Receipt,
-  ChevronDown,
   ChevronRight,
   Globe,
   Boxes
@@ -27,9 +26,11 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [expandedTabs, setExpandedTabs] = useState({});
   const [language, setLanguage] = useState("so"); // 'so' for Somali, 'en' for English
-  const { products } = useProductsStore();
+  const { products: rawProducts } = useProductsStore();
 
-  // Toggle tab expansion
+  // ✅ Ensure products is always an array
+  const products = Array.isArray(rawProducts) ? rawProducts : [];
+
   const toggleTabExpansion = (tabId) => {
     setExpandedTabs(prev => ({
       ...prev,
@@ -71,7 +72,7 @@ const Dashboard = () => {
         { title: "Taariikhda Amaahda", value: "Amaah" },
         { title: "Xisaab Xidhka", value: "Xisaab" },
         { title: "Taariikhda Xisaabta", value: "Xisaab" },
-        { title: "Kaydka", value: "Kaydka", change: "#" } // Added for stock
+        { title: "Kaydka", value: "Kaydka", change: "#" }
       ],
       welcome: "ku Soo dhawoow Dashboard-ka",
       welcomeDesc: "Halkan waxaad ka heli kartaa macluumaadka guud ee ganacsigaaga iyo xogta dhaqaale.",
@@ -113,7 +114,7 @@ const Dashboard = () => {
         { title: "Liability History", value: "Liability" },
         { title: "Accounting", value: "Accounting" },
         { title: "Accounting History", value: "Accounting" },
-        { title: "Stock", value: "Stock", change: "#" } // Added for stock
+        { title: "Stock", value: "Stock", change: "#" }
       ],
       welcome: "Welcome to your Dashboard",
       welcomeDesc: "Here you can find an overview of your business and financial data.",
@@ -125,15 +126,17 @@ const Dashboard = () => {
     }
   };
 
+  // ✅ Safely compute total sales
   const totalSales = products.reduce((sum, product) => {
     const quantity = product.quantity ?? 1;
-    return sum + product.price * quantity;
+    const price = product.price ?? 0;
+    return sum + price * quantity;
   }, 0);
 
-  // Update the value for today's sales
   content.so.stats[1].value = `$${totalSales}`;
   content.en.stats[1].value = `$${totalSales}`;
 
+  // Stats cards data
   const stats = [
     { icon: <DollarSign size={20} />, path: "/DialyLiability" },
     { icon: <ShoppingCart size={20} />, path: "/DailySales" },
@@ -146,6 +149,7 @@ const Dashboard = () => {
     { icon: <Boxes size={20} />, path: "/stock" },
   ];
 
+  // Dashboard Tabs
   const tabs = [
     { 
       id: "dashboard", 
